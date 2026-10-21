@@ -53,6 +53,24 @@ Grid2Options:AddGeneralOptions("General", "Layout Settings", {
 			return not Grid2Layout.db.profile.FrameLock
 		end
 	},
+	playerLast = {
+		type = "toggle",
+		name = L["Player always last"],
+		desc = L["Shows your own frame behind all other group members in the layouts that sort by role."],
+		order = order_layout + 8,
+		get = function()
+			return Grid2Layout.db.profile.playerLast
+		end,
+		set = function()
+			Grid2Layout.db.profile.playerLast = not Grid2Layout.db.profile.playerLast
+			if Grid2Layout.RefreshRoleSort then
+				Grid2Layout:RefreshRoleSort()
+			end
+			if Grid2Options.LayoutTestRefresh then
+				Grid2Options:LayoutTestRefresh()
+			end
+		end
+	},
 	displayheader = {
 		type = "header",
 		order = order_display,

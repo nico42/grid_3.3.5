@@ -179,7 +179,11 @@ local function AddMember(subgroup, unit, name)
 	local t = groupMembers[subgroup]
 	if t and name then
 		local role = GetUnitRole(unit)
-		t[#t + 1] = {name = name, prio = RolePriority[role] or RolePriority.NONE}
+		t[#t + 1] = {
+			name = name,
+			prio = RolePriority[role] or RolePriority.NONE,
+			isPlayer = UnitIsUnit(unit, "player") and true or false,
+		}
 	end
 end
 
@@ -206,7 +210,14 @@ local function BuildRoster()
 	end
 end
 
+-- "Player always last" option (Layout settings): the player is moved behind
+-- everybody else in the group he is shown in, whatever his role is.
+local playerLast = false
+
 local function SortMembers(a, b)
+	if playerLast and a.isPlayer ~= b.isPlayer then
+		return b.isPlayer
+	end
 	if a.prio ~= b.prio then
 		return a.prio < b.prio
 	end
@@ -289,6 +300,9 @@ local function UpdateHeaders()
 		return
 	end
 	pendingUpdate = false
+
+	local db = Grid2Layout.db and Grid2Layout.db.profile
+	playerLast = db and db.playerLast or false
 
 	BuildRoster()
 
@@ -451,6 +465,11 @@ local function RefreshAll()
 	if not InCombatLockdown() then
 		Grid2Layout:UpdateSize()
 	end
+end
+
+-- called by the options when "Player always last" is toggled
+function Grid2Layout:RefreshRoleSort()
+	RefreshAll()
 end
 
 local eventFrame = CreateFrame("Frame")
